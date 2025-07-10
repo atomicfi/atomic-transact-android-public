@@ -1,6 +1,6 @@
 ---
-tag: test-release-20250710-210551
-name: Test Release - PR #79
+tag: "test-release-20250710-211751"
+name: "Test Release - PR #79"
 prerelease: true
 draft: false
 ---
