@@ -1,4 +1,4 @@
-name: "Auto Release from Tag"
+name: "Auto Release from Markdown"
 on:
   push:
     tags:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   create_release:
-    name: "Create Release from Tag"
+    name: "Create Release from Markdown"
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,27 +15,39 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Get tag information
-        id: tag_info
+      - name: Get release information from markdown
+        id: release_info
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
 
-          # Get the tag message (contains release metadata)
-          TAG_MESSAGE=$(git tag -l --format='%(contents)' "$TAG_NAME")
+          # Check if release info file exists
+          if [ ! -f ".github/releases/release-info.md" ]; then
+            echo "❌ Error: Release info file not found!"
+            echo "Expected: .github/releases/release-info.md"
+            exit 1
+          fi
 
-          # Debug: Show the raw tag message
-          echo "📋 Raw tag message:"
-          echo "--- START RAW TAG MESSAGE ---"
-          echo "$TAG_MESSAGE"
-          echo "--- END RAW TAG MESSAGE ---"
+          # Debug: Show the markdown file content
+          echo "📋 Release info markdown content:"
+          echo "--- START RELEASE INFO ---"
+          cat .github/releases/release-info.md
+          echo "--- END RELEASE INFO ---"
 
-          # Extract release name (first non-empty line)
-          RELEASE_NAME=$(echo "$TAG_MESSAGE" | head -n1 | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          # Extract frontmatter values
+          RELEASE_TAG=$(grep "^tag:" .github/releases/release-info.md | cut -d' ' -f2- | tr -d '"')
+          RELEASE_NAME=$(grep "^name:" .github/releases/release-info.md | cut -d' ' -f2- | tr -d '"')
+          IS_PRERELEASE=$(grep "^prerelease:" .github/releases/release-info.md | cut -d' ' -f2- | tr -d '"')
+          IS_DRAFT=$(grep "^draft:" .github/releases/release-info.md | cut -d' ' -f2- | tr -d '"')
+
+          # Extract release body (everything after the second ---)
+          RELEASE_BODY=$(awk '/^---$/{c++} c==2{p=1; next} p' .github/releases/release-info.md)
+
+          # Set outputs
+          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
           echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
-
-          # Extract release body (everything between first line and RELEASE_METADATA)
-          RELEASE_BODY=$(echo "$TAG_MESSAGE" | sed '1d' | sed '/^RELEASE_METADATA:/,$d' | sed '/^$/d' | sed '$d')
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "is_draft=$IS_DRAFT" >> $GITHUB_OUTPUT
 
           # Handle multiline release body
           {
@@ -44,15 +56,8 @@ jobs:
             echo 'EOF'
           } >> $GITHUB_OUTPUT
 
-          # Extract metadata with fallback defaults
-          IS_PRERELEASE=$(echo "$TAG_MESSAGE" | grep "prerelease=" | cut -d= -f2 | tr -d '\r\n' || echo "false")
-          IS_DRAFT=$(echo "$TAG_MESSAGE" | grep "draft=" | cut -d= -f2 | tr -d '\r\n' || echo "false")
-
-          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
-          echo "is_draft=$IS_DRAFT" >> $GITHUB_OUTPUT
-
           # Debug output
-          echo "📝 Parsed Tag: $TAG_NAME"
+          echo "📝 Parsed Tag: $RELEASE_TAG"
           echo "🏷️ Parsed Release Name: '$RELEASE_NAME'"
           echo "🔖 Parsed Is Prerelease: '$IS_PRERELEASE'"
           echo "📄 Parsed Is Draft: '$IS_DRAFT'"
@@ -67,8 +72,10 @@ jobs:
             exit 1
           fi
 
-          if [ -z "$RELEASE_BODY" ]; then
-            echo "⚠️  Warning: Release body is empty!"
+          # Check if the tag from the file matches the trigger tag
+          if [ "$RELEASE_TAG" != "$TAG_NAME" ]; then
+            echo "⚠️  Warning: Tag mismatch! File: $RELEASE_TAG, Trigger: $TAG_NAME"
+            echo "Using trigger tag: $TAG_NAME"
           fi
 
       - name: Create Release
@@ -76,32 +83,39 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🚀 Creating release..."
-          echo "📝 Tag: ${{ steps.tag_info.outputs.tag_name }}"
-          echo "🏷️ Title: ${{ steps.tag_info.outputs.release_name }}"
-          echo "🔖 Prerelease: ${{ steps.tag_info.outputs.is_prerelease }}"
-          echo "📄 Draft: ${{ steps.tag_info.outputs.is_draft }}"
+          echo "📝 Tag: ${{ steps.release_info.outputs.tag_name }}"
+          echo "🏷️ Title: ${{ steps.release_info.outputs.release_name }}"
+          echo "🔖 Prerelease: ${{ steps.release_info.outputs.is_prerelease }}"
+          echo "📄 Draft: ${{ steps.release_info.outputs.is_draft }}"
 
           # Build the gh release create command
-          CMD="gh release create \"${{ steps.tag_info.outputs.tag_name }}\" --title \"${{ steps.tag_info.outputs.release_name }}\""
+          RELEASE_ARGS=""
 
-          # Add release notes if not empty
-          if [ -n "${{ steps.tag_info.outputs.release_body }}" ]; then
-            CMD="$CMD --notes \"${{ steps.tag_info.outputs.release_body }}\""
-          else
-            CMD="$CMD --notes \"Release ${{ steps.tag_info.outputs.tag_name }}\""
+          # Add prerelease flag if needed
+          if [ "${{ steps.release_info.outputs.is_prerelease }}" = "true" ]; then
+            RELEASE_ARGS="$RELEASE_ARGS --prerelease"
           fi
 
-          # Add flags based on metadata
-          if [ "${{ steps.tag_info.outputs.is_prerelease }}" = "true" ]; then
-            CMD="$CMD --prerelease"
+          # Add draft flag if needed
+          if [ "${{ steps.release_info.outputs.is_draft }}" = "true" ]; then
+            RELEASE_ARGS="$RELEASE_ARGS --draft"
           fi
 
-          if [ "${{ steps.tag_info.outputs.is_draft }}" = "true" ]; then
-            CMD="$CMD --draft"
-          fi
+          # Create the release
+          gh release create "${{ steps.release_info.outputs.tag_name }}" \
+            --title "${{ steps.release_info.outputs.release_name }}" \
+            --notes "${{ steps.release_info.outputs.release_body }}" \
+            $RELEASE_ARGS
 
-          echo "📋 Running command: $CMD"
-          eval $CMD
+          echo "✅ Successfully created release from markdown file"
+          echo "🔗 View release at: https://github.com/${{ github.repository }}/releases/tag/${{ steps.release_info.outputs.tag_name }}"
 
-          echo "✅ Successfully created release from tag ${{ steps.tag_info.outputs.tag_name }}"
-          echo "🔗 View release at: https://github.com/${{ github.repository }}/releases/tag/${{ steps.tag_info.outputs.tag_name }}"
+      - name: Cleanup release info file
+        run: |
+          # Remove the release info file after successful release creation
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git rm .github/releases/release-info.md
+          git commit -m "Remove release info file after creating release ${{ steps.release_info.outputs.tag_name }}"
+          git push origin main
+        continue-on-error: true
