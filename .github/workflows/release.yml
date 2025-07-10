@@ -26,7 +26,7 @@ jobs:
           # Remove the release info file after successful release creation
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-          git rm .github/releases/release-info.md
-          git commit -m "Remove release info file after creating release ${{ steps.release_info.outputs.tag_name }}"
+          git rm .github/releases/release-body.txt
+          git commit -m "Remove release info file after creating release ${{ github.ref_name }}"
           git push origin main
         continue-on-error: true
