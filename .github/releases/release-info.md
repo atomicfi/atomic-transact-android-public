@@ -1,5 +1,5 @@
 ---
-tag: "test-release-20250710-213112"
+tag: "test-release-20250710-213324"
 name: "Test Release - PR #79"
 prerelease: true
 draft: false
