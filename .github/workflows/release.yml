@@ -25,23 +25,52 @@ jobs:
           if [ ! -f ".github/releases/release-info.md" ]; then
             echo "❌ Error: Release info file not found!"
             echo "Expected: .github/releases/release-info.md"
+            ls -la .github/releases/ || echo "Directory .github/releases/ does not exist"
             exit 1
           fi
 
-          # Debug: Show the markdown file content
-          echo "📋 Release info markdown content:"
+          # Debug: Show the markdown file content with line numbers
+          echo "📋 Release info markdown content (with line numbers):"
           echo "--- START RELEASE INFO ---"
-          cat .github/releases/release-info.md
+          cat -n .github/releases/release-info.md
           echo "--- END RELEASE INFO ---"
 
-          # Extract frontmatter values
-          RELEASE_TAG=$(grep "^tag:" .github/releases/release-info.md | cut -d' ' -f2- | tr -d '"')
-          RELEASE_NAME=$(grep "^name:" .github/releases/release-info.md | cut -d' ' -f2- | tr -d '"')
-          IS_PRERELEASE=$(grep "^prerelease:" .github/releases/release-info.md | cut -d' ' -f2- | tr -d '"')
-          IS_DRAFT=$(grep "^draft:" .github/releases/release-info.md | cut -d' ' -f2- | tr -d '"')
+          # Extract frontmatter values with better parsing
+          RELEASE_TAG=$(sed -n '/^tag:/p' .github/releases/release-info.md | cut -d':' -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          RELEASE_NAME=$(sed -n '/^name:/p' .github/releases/release-info.md | cut -d':' -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          IS_PRERELEASE=$(sed -n '/^prerelease:/p' .github/releases/release-info.md | cut -d':' -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          IS_DRAFT=$(sed -n '/^draft:/p' .github/releases/release-info.md | cut -d':' -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
-          # Extract release body (everything after the second ---)
-          RELEASE_BODY=$(awk '/^---$/{c++} c==2{p=1; next} p' .github/releases/release-info.md)
+          # Debug: Show extracted frontmatter
+          echo "🔍 Extracted frontmatter:"
+          echo "  Tag: '$RELEASE_TAG'"
+          echo "  Name: '$RELEASE_NAME'"
+          echo "  Prerelease: '$IS_PRERELEASE'"
+          echo "  Draft: '$IS_DRAFT'"
+
+          # Extract release body (everything after the closing ---)
+          # Find the line number of the second ---
+          FRONTMATTER_END=$(grep -n '^---$' .github/releases/release-info.md | sed -n '2p' | cut -d':' -f1)
+
+          echo "🔍 Frontmatter ends at line: $FRONTMATTER_END"
+
+          if [ -n "$FRONTMATTER_END" ]; then
+            # Extract everything after the frontmatter
+            RELEASE_BODY=$(tail -n +$((FRONTMATTER_END + 1)) .github/releases/release-info.md)
+            
+            # Remove leading empty lines
+            RELEASE_BODY=$(echo "$RELEASE_BODY" | sed '/./,$!d')
+          else
+            echo "❌ Error: Could not find frontmatter end marker"
+            RELEASE_BODY=""
+          fi
+
+          # Debug: Show extracted body
+          echo "📋 Extracted release body:"
+          echo "--- START RELEASE BODY ---"
+          echo "$RELEASE_BODY"
+          echo "--- END RELEASE BODY ---"
+          echo "📏 Release body length: ${#RELEASE_BODY}"
 
           # Set outputs
           echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
@@ -56,26 +85,15 @@ jobs:
             echo 'EOF'
           } >> $GITHUB_OUTPUT
 
-          # Debug output
-          echo "📝 Parsed Tag: $RELEASE_TAG"
-          echo "🏷️ Parsed Release Name: '$RELEASE_NAME'"
-          echo "🔖 Parsed Is Prerelease: '$IS_PRERELEASE'"
-          echo "📄 Parsed Is Draft: '$IS_DRAFT'"
-          echo "📋 Parsed Release Body:"
-          echo "--- START RELEASE BODY ---"
-          echo "$RELEASE_BODY"
-          echo "--- END RELEASE BODY ---"
-
           # Validate required fields
           if [ -z "$RELEASE_NAME" ]; then
             echo "❌ Error: Release name is empty!"
             exit 1
           fi
 
-          # Check if the tag from the file matches the trigger tag
-          if [ "$RELEASE_TAG" != "$TAG_NAME" ]; then
-            echo "⚠️  Warning: Tag mismatch! File: $RELEASE_TAG, Trigger: $TAG_NAME"
-            echo "Using trigger tag: $TAG_NAME"
+          if [ -z "$RELEASE_BODY" ]; then
+            echo "⚠️  Warning: Release body is empty!"
+            echo "This might indicate a parsing issue."
           fi
 
       - name: Create Release
@@ -87,6 +105,12 @@ jobs:
           echo "🏷️ Title: ${{ steps.release_info.outputs.release_name }}"
           echo "🔖 Prerelease: ${{ steps.release_info.outputs.is_prerelease }}"
           echo "📄 Draft: ${{ steps.release_info.outputs.is_draft }}"
+
+          # Debug: Show the release body that will be used
+          echo "📋 Release body to be used:"
+          echo "--- START BODY FOR RELEASE ---"
+          echo "${{ steps.release_info.outputs.release_body }}"
+          echo "--- END BODY FOR RELEASE ---"
 
           # Build the gh release create command
           RELEASE_ARGS=""
@@ -101,11 +125,20 @@ jobs:
             RELEASE_ARGS="$RELEASE_ARGS --draft"
           fi
 
-          # Create the release
-          gh release create "${{ steps.release_info.outputs.tag_name }}" \
-            --title "${{ steps.release_info.outputs.release_name }}" \
-            --notes "${{ steps.release_info.outputs.release_body }}" \
-            $RELEASE_ARGS
+          # Create the release with explicit body handling
+          if [ -n "${{ steps.release_info.outputs.release_body }}" ]; then
+            echo "📝 Creating release with body content..."
+            gh release create "${{ steps.release_info.outputs.tag_name }}" \
+              --title "${{ steps.release_info.outputs.release_name }}" \
+              --notes "${{ steps.release_info.outputs.release_body }}" \
+              $RELEASE_ARGS
+          else
+            echo "⚠️  Creating release without body (empty)..."
+            gh release create "${{ steps.release_info.outputs.tag_name }}" \
+              --title "${{ steps.release_info.outputs.release_name }}" \
+              --notes "Release ${{ steps.release_info.outputs.tag_name }}" \
+              $RELEASE_ARGS
+          fi
 
           echo "✅ Successfully created release from markdown file"
           echo "🔗 View release at: https://github.com/${{ github.repository }}/releases/tag/${{ steps.release_info.outputs.tag_name }}"
