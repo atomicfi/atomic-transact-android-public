@@ -112,32 +112,40 @@ jobs:
           echo "${{ steps.release_info.outputs.release_body }}"
           echo "--- END BODY FOR RELEASE ---"
 
-          # Build the gh release create command
-          RELEASE_ARGS=""
+                    # Build the gh release create command args
+          RELEASE_ARGS=()
 
           # Add prerelease flag if needed
           if [ "${{ steps.release_info.outputs.is_prerelease }}" = "true" ]; then
-            RELEASE_ARGS="$RELEASE_ARGS --prerelease"
+            RELEASE_ARGS+=("--prerelease")
           fi
 
           # Add draft flag if needed
           if [ "${{ steps.release_info.outputs.is_draft }}" = "true" ]; then
-            RELEASE_ARGS="$RELEASE_ARGS --draft"
+            RELEASE_ARGS+=("--draft")
           fi
 
-          # Create the release with explicit body handling
+          # Debug: Show the command that will be run
+          echo "🔧 Release args: ${RELEASE_ARGS[*]}"
+
+          # Create the release with explicit body handling using a temp file
           if [ -n "${{ steps.release_info.outputs.release_body }}" ]; then
             echo "📝 Creating release with body content..."
+            
+            # Write release body to a temporary file to avoid shell escaping issues
+            echo "${{ steps.release_info.outputs.release_body }}" > /tmp/release_notes.md
+            
+            # Create the release using the notes file
             gh release create "${{ steps.release_info.outputs.tag_name }}" \
               --title "${{ steps.release_info.outputs.release_name }}" \
-              --notes "${{ steps.release_info.outputs.release_body }}" \
-              $RELEASE_ARGS
+              --notes-file /tmp/release_notes.md \
+              "${RELEASE_ARGS[@]}"
           else
             echo "⚠️  Creating release without body (empty)..."
             gh release create "${{ steps.release_info.outputs.tag_name }}" \
               --title "${{ steps.release_info.outputs.release_name }}" \
               --notes "Release ${{ steps.release_info.outputs.tag_name }}" \
-              $RELEASE_ARGS
+              "${RELEASE_ARGS[@]}"
           fi
 
           echo "✅ Successfully created release from markdown file"
