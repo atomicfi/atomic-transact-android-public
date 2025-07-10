@@ -1,4 +1,4 @@
-name: "Auto Release from Markdown"
+name: "Create Release"
 on:
   push:
     tags:
@@ -20,13 +20,3 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body_path: ${{ github.workspace }}/.github/releases/release-body.txt
-
-      - name: Cleanup release info file
-        run: |
-          # Remove the release info file after successful release creation
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git rm .github/releases/release-body.txt
-          git commit -m "Remove release info file after creating release ${{ github.ref_name }}"
-          git push origin main
-        continue-on-error: true
