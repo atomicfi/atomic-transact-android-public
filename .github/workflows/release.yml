@@ -1,32 +1,59 @@
-name: Create Release
-
+name: "Auto Release from Tag"
 on:
   push:
     tags:
       - "*"
 
 jobs:
-  create-release:
+  create_release:
+    name: "Create Release from Tag"
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
-
-      - name: Get tag name
-        id: tag
-        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: mikepenz/action-gh-release@main
-        with:
-          generate_release_notes: true
-
-      - name: Notify release created
+          fetch-depth: 0
+      - name: Get tag information
+        id: tag_info
         run: |
-          echo "✅ Release ${{ steps.tag.outputs.tag }} has been created successfully!"
-          echo "🔗 View at: https://github.com/${{ github.repository }}/releases/tag/${{ steps.tag.outputs.tag }}"
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+          # Get the tag message (contains release metadata)
+          TAG_MESSAGE=$(git tag -l --format='%(contents)' "$TAG_NAME")
+
+          # Extract release name (first line)
+          RELEASE_NAME=$(echo "$TAG_MESSAGE" | head -n1)
+          echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+
+          # Extract release body (everything before RELEASE_METADATA)
+          RELEASE_BODY=$(echo "$TAG_MESSAGE" | sed '/^RELEASE_METADATA:/,$d' | sed '1d' | sed '$d')
+          echo "release_body<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Extract metadata
+          IS_PRERELEASE=$(echo "$TAG_MESSAGE" | grep "prerelease=" | cut -d= -f2)
+          IS_DRAFT=$(echo "$TAG_MESSAGE" | grep "draft=" | cut -d= -f2)
+
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "is_draft=$IS_DRAFT" >> $GITHUB_OUTPUT
+
+          echo "📝 Tag: $TAG_NAME"
+          echo "🏷️ Release Name: $RELEASE_NAME"
+          echo "🔖 Is Prerelease: $IS_PRERELEASE"
+          echo "📄 Is Draft: $IS_DRAFT"
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.tag_info.outputs.tag_name }}" \
+            --title "${{ steps.tag_info.outputs.release_name }}" \
+            --notes "${{ steps.tag_info.outputs.release_body }}" \
+            $(if [ "${{ steps.tag_info.outputs.is_prerelease }}" = "true" ]; then echo "--prerelease"; fi) \
+            $(if [ "${{ steps.tag_info.outputs.is_draft }}" = "true" ]; then echo "--draft"; fi)
+
+          echo "✅ Successfully created release from tag ${{ steps.tag_info.outputs.tag_name }}"
+          echo "🔗 View release at: https://github.com/${{ github.repository }}/releases/tag/${{ steps.tag_info.outputs.tag_name }}"
