@@ -1,0 +1,6 @@
+## Test Release v1.0.0-test
+
+This is a test release for validating the mirror-release workflow.
+
+### Testing Notes:
+- This release was automatically generated for testing purposes.
