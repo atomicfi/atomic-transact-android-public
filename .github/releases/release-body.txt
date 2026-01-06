@@ -1,8 +1,8 @@
-## 2025-12-03
+## 2026-01-06
 
 ### Changes
 
-- Add app parameter in task object
+- Adds a fix to un-register all receivers when sdk is finished
 
 ### Requirements
 
@@ -14,4 +14,4 @@
 | Min SDK    | 21      |
 | Target SDK | 36      |
 
-**Full Changelog**: https://github.com/atomicfi/atomic-transact-android/compare/v3.15.0...v3.15.1
+**Full Changelog**: https://github.com/atomicfi/atomic-transact-android/compare/v3.15.1...v3.15.2
