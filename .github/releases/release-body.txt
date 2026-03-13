@@ -1,17 +1,17 @@
-## 2026-03-04
+## 2026-03-13
 
 ### Impact
 
-- Fixed a bug where users saw a "Webpage not available" error when navigating back from a connector login page, reported across multiple connectors including ADP, Paylocity, and others
-- Resolved an issue causing app freezes (ANR) and memory warnings when users rotated their device during a Transact session
-- The legacy SDK variant (`-kotlin1.9`) now works with AGP 8.1, expanding compatibility for apps that have not yet upgraded to Kotlin 2.0+
+- Fixed Transact unexpectedly closing when switching between apps during a Transact session.
+- Fixed intermittent failures that could occur during authentication when certain websites returned multi-valued HTTP headers (e.g., multiple cookies).
 
 ### Changes
 
-- Fixed "Webpage not available" error when navigating back from connector login pages
-- Fixed device rotation causing memory overload and ANR in Transact sessions
-- Legacy SDK variant is now compatible with AGP 8.1 for Kotlin 1.9.x projects
-- Transact background service no longer restarts unexpectedly after being stopped
+- Added `manage` product type and renamed `transactions` to `expenses` in deeplink/task apps (#119)
+- Fixed activity recreation crash by gracefully cancelling when the Transact instance is unavailable (#121)
+- Bumped Muppet to 0.0.0-alpha41 and Muppet Legacy to 0.0.0-alpha4, which includes:
+  - Fixed JSON parsing error when HTTP responses contain multi-valued headers like `set-cookie`
+  - Fixed null URL handling in page cookies that could cause a `MalformedURLException`
 
 ### Products
 
@@ -41,4 +41,4 @@
 | Min SDK    | 21         | 21            |
 | Target SDK | 35         | 35            |
 
-**Full Changelog**: https://github.com/atomicfi/atomic-transact-android/compare/v3.16.0...v3.16.1
+**Full Changelog**: https://github.com/atomicfi/atomic-transact-android/compare/v3.16.1...v3.17.0
