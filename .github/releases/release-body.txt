@@ -1,17 +1,15 @@
-## 2026-03-13
+## 2026-03-18
 
 ### Impact
 
-- Fixed Transact unexpectedly closing when switching between apps during a Transact session.
-- Fixed intermittent failures that could occur during authentication when certain websites returned multi-valued HTTP headers (e.g., multiple cookies).
+- Fixed a crash (`IllegalArgumentException`) that could occur during authentication on certain websites that return complex nested data structures in their responses.
+- Fixed an issue where users could be incorrectly marked as authenticated when a JavaScript error occurred during login verification, which would cause a task to start prematurely.
 
 ### Changes
 
-- Added `manage` product type and renamed `transactions` to `expenses` in deeplink/task apps (#119)
-- Fixed activity recreation crash by gracefully cancelling when the Transact instance is unavailable (#121)
-- Bumped Muppet to 0.0.0-alpha41 and Muppet Legacy to 0.0.0-alpha4, which includes:
-  - Fixed JSON parsing error when HTTP responses contain multi-valued headers like `set-cookie`
-  - Fixed null URL handling in page cookies that could cause a `MalformedURLException`
+- Bumped Muppet to 0.0.0-alpha42 and Muppet Legacy to 0.0.0-alpha5, which includes:
+  - Fixed JSON parsing crash when HTTP responses contain nested non-primitive values in JSON arrays
+  - Fixed JavaScript evaluate errors returning truthy strings instead of null, causing false positives in authentication checks
 
 ### Products
 
@@ -41,4 +39,4 @@
 | Min SDK    | 21         | 21            |
 | Target SDK | 35         | 35            |
 
-**Full Changelog**: https://github.com/atomicfi/atomic-transact-android/compare/v3.16.1...v3.17.0
+**Full Changelog**: https://github.com/atomicfi/atomic-transact-android/compare/v3.17.0...v3.17.1
