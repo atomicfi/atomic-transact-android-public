@@ -6,7 +6,7 @@
 
 ### Changes
 
-- Add `Platform.suffixed()` factory method and mutable `platform` property on `Config`
+- Fix `Platform.suffixed()` factory method getting reset on `presentTransact`
 
 ### Products
 
