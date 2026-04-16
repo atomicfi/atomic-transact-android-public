@@ -2,24 +2,15 @@
 
 ### Impact
 
-- SDK binary size significantly reduced by removing `androidx.security:security-crypto`
-- Card data response now includes `cardType` (`debit` / `credit`)
-- CoAuth can be disabled via `features: { coAuth: false }`
-- **Breaking:** minSdkVersion raised from 21 to 23
+- Internal change to support Atomic's SDK wrappers with platform identification
 
 ### Changes
 
-- Replace `security-crypto` with direct AndroidKeyStore encryption
-  - **Breaking:** minSdkVersion raised from 21 to 23 (Android 6.0)
-- Add `cardType` field to `TransactDataResponse`
-- Add `coAuth` toggle to the `Features` config object
-- Add platform info fields for SDK analytics
+- Add `Platform.suffixed()` factory method and mutable `platform` property on `Config`
 
 ### Products
 
-- Deposit
-- Switch
-- Manage
+- Internal
 
 ### Requirements
 
