@@ -1,15 +1,19 @@
-## 2026-03-18
+## 2026-04-16
 
 ### Impact
 
-- Fixed a crash (`IllegalArgumentException`) that could occur during authentication on certain websites that return complex nested data structures in their responses.
-- Fixed an issue where users could be incorrectly marked as authenticated when a JavaScript error occurred during login verification, which would cause a task to start prematurely.
+- SDK binary size significantly reduced by removing `androidx.security:security-crypto`
+- Card data response now includes `cardType` (`debit` / `credit`)
+- CoAuth can be disabled via `features: { coAuth: false }`
+- **Breaking:** minSdkVersion raised from 21 to 23
 
 ### Changes
 
-- Bumped Muppet to 0.0.0-alpha42 and Muppet Legacy to 0.0.0-alpha5, which includes:
-  - Fixed JSON parsing crash when HTTP responses contain nested non-primitive values in JSON arrays
-  - Fixed JavaScript evaluate errors returning truthy strings instead of null, causing false positives in authentication checks
+- Replace `security-crypto` with direct AndroidKeyStore encryption
+  - **Breaking:** minSdkVersion raised from 21 to 23 (Android 6.0)
+- Add `cardType` field to `TransactDataResponse`
+- Add `coAuth` toggle to the `Features` config object
+- Add platform info fields for SDK analytics
 
 ### Products
 
@@ -26,7 +30,7 @@
 | Kotlin     | 2.0+       | 2.1.21        |
 | Gradle     | 8.7+       | 8.7           |
 | AGP        | 8.6+       | 8.6.1         |
-| Min SDK    | 21         | 21            |
+| Min SDK    | 23         | 23            |
 | Target SDK | 35         | 35            |
 
 #### Legacy (`-kotlin1.9`)
@@ -36,7 +40,6 @@
 | Kotlin     | 1.9.x      | 1.9.25        |
 | Gradle     | 8.0+       | 8.7           |
 | AGP        | 8.1 - 8.5  | 8.1.4         |
-| Min SDK    | 21         | 21            |
+| Min SDK    | 23         | 23            |
 | Target SDK | 35         | 35            |
 
-**Full Changelog**: https://github.com/atomicfi/atomic-transact-android/compare/v3.17.0...v3.17.1
