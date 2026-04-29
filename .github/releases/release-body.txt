@@ -6,7 +6,7 @@
 
 ### Changes
 
-- Fix `Platform.suffixed()` factory method getting reset on `presentTransact`
+- Fix `Platform.suffixed()` factory method missing info
 
 ### Products
 
