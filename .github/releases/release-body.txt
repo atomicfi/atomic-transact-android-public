@@ -1,16 +1,20 @@
-## 2026-04-16
+## 2026-05-11
 
 ### Impact
 
-- Internal change to support Atomic's SDK wrappers with platform identification
+- Adds a headless mode for action tasks, letting integrators run an action without presenting Transact UI.
 
 ### Changes
 
-- Fix `Platform.suffixed()` factory method missing info
+- Add `actionType` to `TaskStatusUpdate` so consumers can tell which action (`refresh`, `connect-account`, `disconnect-account`, `switch`, `cancel-plan`, `pause-plan`) succeeded or failed
+- Add support for headless actions: new `headless` option on action configuration is now passed through to Transact (#181, #182)
+- Set the Transact `publicToken` on the webview's `window` for more secure token handling 
 
 ### Products
 
-- Internal
+- Deposit
+- Switch
+- Manage
 
 ### Requirements
 
