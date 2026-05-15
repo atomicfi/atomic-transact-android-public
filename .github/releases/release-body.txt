@@ -1,14 +1,14 @@
-## 2026-05-11
+## 2026-05-15
 
 ### Impact
 
-- Adds a headless mode for action tasks, letting integrators run an action without presenting Transact UI.
+- **Manage Actions: API change** — `Transact.presentAction()` and `ActionConfig` have been removed. Customers running Manage actions should now call `Transact.present()` directly with a regular `Config`. The SDK detects headless action tasks from the config and skips showing the WebView UI automatically.
 
 ### Changes
 
-- Add `actionType` to `TaskStatusUpdate` so consumers can tell which action (`refresh`, `connect-account`, `disconnect-account`, `switch`, `cancel-plan`, `pause-plan`) succeeded or failed
-- Add support for headless actions: new `headless` option on action configuration is now passed through to Transact (#181, #182)
-- Set the Transact `publicToken` on the webview's `window` for more secure token handling 
+- Removed `Transact.presentAction()` and `ActionConfig`; use `Transact.present()` with `Config` for Manage actions
+- Fixed headless action detection so it works for token-based configs
+- Fixed the public token injection into `window.__TRANSACT_PUBLIC_TOKEN__` for encoded Transact configs (#185, #186)
 
 ### Products
 
