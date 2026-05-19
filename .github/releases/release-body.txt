@@ -1,19 +1,15 @@
-## 2026-05-15
+## 2026-05-19
 
 ### Impact
 
-- **Manage Actions: API change** — `Transact.presentAction()` and `ActionConfig` have been removed. Customers running Manage actions should now call `Transact.present()` directly with a regular `Config`. The SDK detects headless action tasks from the config and skips showing the WebView UI automatically.
+- Fixes a bug where running an action (e.g. a refresh) against a linked-but-unauthenticated connector would fail with `unknown-failure`. Users will now be correctly prompted to re-authenticate via TrueAuth, after which the action completes successfully.
 
 ### Changes
 
-- Removed `Transact.presentAction()` and `ActionConfig`; use `Transact.present()` with `Config` for Manage actions
-- Fixed headless action detection so it works for token-based configs
-- Fixed the public token injection into `window.__TRANSACT_PUBLIC_TOKEN__` for encoded Transact configs (#185, #186)
+- Route action flows through an overlay attached to the host activity so injected TrueAuth webviews can be presented when a connector needs to re-authenticate
 
 ### Products
 
-- Deposit
-- Switch
 - Manage
 
 ### Requirements
