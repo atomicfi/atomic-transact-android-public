@@ -1,16 +1,24 @@
-## 2026-05-21
+## 2026-07-09
 
 ### Impact
 
-- **Performance observability.** The SDK now records three milestone timings on every Transact presentation — Time to Load, Time to Initialize, and Time to First Interaction. This gives the team production visibility into SDK performance.
-- **More language support.** French is now accepted as a language value, and the SDK automatically defaults to French on French-locale devices when no language is provided.
+- **The default SDK now requires AGP 8.9+ and Gradle 8.11.1+.** Its build toolchain was upgraded to Android Gradle Plugin 8.9.1 and Gradle 8.14.2, so integrating apps must be on AGP 8.9 or newer.
+- **Redesigned TrueAuth in-app browser.** The TrueAuth web view shown during login flows was rebuilt on Atomic's native AtomicWebView, adding a toolbar and close button — a clearer experience while users authenticate.
+- **onClose background fix.** Previously, leaving the host app mid-flow could close the session if the app lost network access. The SDK now ignores transient network errors while backgrounded and reloads on return, so users resume where they left off.
+- **Smoother login hand-off.** The keyboard now closes automatically once TrueAuth detects authentication, so it no longer covers the loading screen after sign-in. Folding, rotating, or entering split-screen no longer briefly re-shows the hidden TrueAuth browser.
+- **Debug flag.** A debug flag enables web view inspection plus verbose info, debug, and error logging.
+- **License clarification.** The published artifact is now correctly labeled under Atomic's proprietary SDK License Agreement (the Maven POM previously defaulted to MIT). No functional change.
 
 ### Changes
 
-- Recorded Transact timings (Time to Load, Time to Initialize, Time to First Interaction) and emitted them to tracing service
-- Added `Config.Deeplink.Step.MANUAL_FALLBACK` for routing users directly into the manual setup / fallback experience
-- Added French (`fr`) language support and a system-language option that follows the device locale
-- Removed the `publicToken` from the Transact initialize URL; it now flows only through the in-page window object
+- Rebuilt the TrueAuth in-app browser on the native AtomicWebView with a toolbar and close button for a Chrome-like experience
+- Added a `debug` flag that enables web view inspection and debug logging across Transact, muppet, and quantum
+- Added Uplink session integration; Uplink is opt-in, so apps using Uplink sessions add `build.uplink:core-android` explicitly (Latest variant only)
+- Kept the Transact session alive through transient network errors while backgrounded, reloading on return to foreground instead of closing
+- Closed the keyboard automatically after the user authenticates via TrueAuth so it no longer covers the loading UI
+- Kept the TrueAuth browser hidden when folding, rotating, or entering split-screen, including on the legacy variant (#211, #212)
+- Published the SDK under the correct Atomic SDK License Agreement
+- Upgraded the Latest variant toolchain to Android Gradle Plugin 8.9.1 / Gradle 8.14.2
 
 ### Products
 
@@ -25,8 +33,8 @@
 | Name       | Compatible | Build Version |
 | ---------- | ---------- | ------------- |
 | Kotlin     | 2.0+       | 2.1.21        |
-| Gradle     | 8.7+       | 8.7           |
-| AGP        | 8.6+       | 8.6.1         |
+| Gradle     | 8.11.1+    | 8.14.2        |
+| AGP        | 8.9+       | 8.9.1         |
 | Min SDK    | 23         | 23            |
 | Target SDK | 35         | 35            |
 
