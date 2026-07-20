@@ -1,29 +1,16 @@
-## 2026-07-09
+## 2026-07-20
 
 ### Impact
 
-- **The default SDK now requires AGP 8.9+ and Gradle 8.11.1+.** Its build toolchain was upgraded to Android Gradle Plugin 8.9.1 and Gradle 8.14.2, so integrating apps must be on AGP 8.9 or newer.
-- **Redesigned TrueAuth in-app browser.** The TrueAuth web view shown during login flows was rebuilt on Atomic's native AtomicWebView, adding a toolbar and close button — a clearer experience while users authenticate.
-- **onClose background fix.** Previously, leaving the host app mid-flow could close the session if the app lost network access. The SDK now ignores transient network errors while backgrounded and reloads on return, so users resume where they left off.
-- **Smoother login hand-off.** The keyboard now closes automatically once TrueAuth detects authentication, so it no longer covers the loading screen after sign-in. Folding, rotating, or entering split-screen no longer briefly re-shows the hidden TrueAuth browser.
-- **Debug flag.** A debug flag enables web view inspection plus verbose info, debug, and error logging.
-- **License clarification.** The published artifact is now correctly labeled under Atomic's proprietary SDK License Agreement (the Maven POM previously defaulted to MIT). No functional change.
+- Apps that launch Transact more than once no longer have their callback receivers overridden. Multiple Transact instances can now run without one clobbering another's callbacks, so results are delivered reliably to the correct handler.
 
 ### Changes
 
-- Rebuilt the TrueAuth in-app browser on the native AtomicWebView with a toolbar and close button for a Chrome-like experience
-- Added a `debug` flag that enables web view inspection and debug logging across Transact, muppet, and quantum
-- Added Uplink session integration; Uplink is opt-in, so apps using Uplink sessions add `build.uplink:core-android` explicitly (Latest variant only)
-- Kept the Transact session alive through transient network errors while backgrounded, reloading on return to foreground instead of closing
-- Closed the keyboard automatically after the user authenticates via TrueAuth so it no longer covers the loading UI
-- Kept the TrueAuth browser hidden when folding, rotating, or entering split-screen, including on the legacy variant (#211, #212)
-- Published the SDK under the correct Atomic SDK License Agreement
-- Upgraded the Latest variant toolchain to Android Gradle Plugin 8.9.1 / Gradle 8.14.2
+- Added support for the `account` deeplink step with an accompanying `accountId`, allowing apps to deep link directly to an Account/Merchant page
+- Support for multiple Transact instances without overriding each other's callback receivers
 
 ### Products
 
-- Deposit
-- Switch
 - Manage
 
 ### Requirements
