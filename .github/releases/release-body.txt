@@ -1,15 +1,16 @@
-## 2026-07-27
+## 2026-08-24
 
 ### Impact
 
-- Apps embedding the SDK could be filtered out of the Google Play Store on landscape-only devices. This release removes that unintended filtering, with no change to Transact's portrait behavior.
-- Security hardening: the Transact web view now strips `Authorization` and `Cookie` headers when a redirect crosses to a different origin, preventing credentials from leaking across origins.
+This release improves the Transact launch experience for users on slow or unresponsive internet connections. Most users will see no change, but the small percentage of users on slower connections will have a smoother experience, and anyone affected by unresponsive networks will now have a way to leave. We recommend all customers upgrade to benefit from these improvements.
 
 ### Changes
 
-- Fixed Google Play device filtering that could hide consuming apps on landscape-only devices, by declaring screen-orientation features as not required
-- Hardened cross-origin redirect handling to strip `Authorization`, `Proxy-Authorization`, and `Cookie` headers on cross-origin hops (muppet 0.0.0-alpha47)
-- Updated bundled Material components
+- Added `preScreenOnLoad` to the `Features` config object; set `false` to disable the on-load preScreen for a given Transact initialization
+- Added a native loading spinner with a delayed-appearing native close control and a 60s init timeout, routed through the standard closed-completion path
+- Prevented Android Content Capture from disabling TalkBack on the Transact welcome screen
+- Added Muppet performance metrics
+- Added Muppet debug-log support to aid field investigations
 
 ### Products
 
