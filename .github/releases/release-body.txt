@@ -1,22 +1,16 @@
-## 2026-08-24
+## 2026-09-01
 
 ### Impact
 
-This release improves the Transact launch experience for users on slow or unresponsive internet connections. Most users will see no change, but the small percentage of users on slower connections will have a smoother experience, and anyone affected by unresponsive networks will now have a way to leave. We recommend all customers upgrade to benefit from these improvements.
+- Users who authenticate through Okta and rely on the Okta Verify app can now be redirected into it during the auth flow.
 
 ### Changes
 
-- Added `preScreenOnLoad` to the `Features` config object; set `false` to disable the on-load preScreen for a given Transact initialization
-- Added a native loading spinner with a delayed-appearing native close control and a 60s init timeout, routed through the standard closed-completion path
-- Prevented Android Content Capture from disabling TalkBack on the Transact welcome screen
-- Added Muppet performance metrics
-- Added Muppet debug-log support to aid field investigations
+- Allowlist `okta.com` for native intent launches so the Okta Verify app opens correctly during universal-link handoff
 
 ### Products
 
 - Deposit
-- Switch
-- Manage
 
 ### Requirements
 
