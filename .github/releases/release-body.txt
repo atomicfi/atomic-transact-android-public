@@ -1,16 +1,28 @@
-## 2026-09-01
+## 2026-09-29
 
 ### Impact
 
-- Users who authenticate through Okta and rely on the Okta Verify app can now be redirected into it during the auth flow.
+- **Transact now requires a WebView that supports multiple profiles.** On devices whose system WebView lacks this support, Transact shows a controlled error instead of starting, rather than falling back to the app's shared cookie store. Most devices with an up-to-date Android System WebView are unaffected.
+- **Transact's cookies are now isolated from the host app.** Transact and provider login pages use their own persistent browser profile, so they no longer read or write cookies in the app's default WebView store.
+- Fixed a bug that could cause password managers to not detect when to auto fill.
+- Transact reopens reliably when an app returns to it after the screen that launched it has been closed; previously these later launches could fail to open.
+- Integrations that pass a receiver to `Transact.present` now receive the `onCleanup` callback.
 
 ### Changes
 
-- Allowlist `okta.com` for native intent launches so the Okta Verify app opens correctly during universal-link handoff
+- Transact and provider WebViews now use a dedicated, persistent cookie profile separate from the host app
+- Transact stays connected to its background service after the launching Activity is closed
+- `onCleanup` is now delivered to receivers passed to `Transact.present`
+- Fixed R8 build failures in minified apps that don't include Uplink
+- Provider login pages now use the visible Activity, so password-manager autofill works
+- The SDK version is now correct when the SDK is built from source
+- Updated internal Muppet and Uplink dependencies (#287, #290)
 
 ### Products
 
 - Deposit
+- Switch
+- Manage
 
 ### Requirements
 
