@@ -1,22 +1,13 @@
-## 2026-09-29
+## 2026-10-01
 
 ### Impact
 
-- **Transact now requires a WebView that supports multiple profiles.** On devices whose system WebView lacks this support, Transact shows a controlled error instead of starting, rather than falling back to the app's shared cookie store. Most devices with an up-to-date Android System WebView are unaffected.
-- **Transact's cookies are now isolated from the host app.** Transact and provider login pages use their own persistent browser profile, so they no longer read or write cookies in the app's default WebView store.
-- Fixed a bug that could cause password managers to not detect when to auto fill.
-- Transact reopens reliably when an app returns to it after the screen that launched it has been closed; previously these later launches could fail to open.
-- Integrations that pass a receiver to `Transact.present` now receive the `onCleanup` callback.
+- **Transact now reports the device's WebView provider and version.** Atomic can now see which WebView each Android session ran on, such as Android System WebView or Chrome, and which version. This makes WebView-related issues faster to diagnose, including devices affected by the multiple-profile WebView requirement added in v3.25.0.
+- **Sessions blocked by an unsupported WebView are now tracked separately.** Atomic's monitoring can now tell these sessions apart from other errors that happen before Transact loads.
 
 ### Changes
 
-- Transact and provider WebViews now use a dedicated, persistent cookie profile separate from the host app
-- Transact stays connected to its background service after the launching Activity is closed
-- `onCleanup` is now delivered to receivers passed to `Transact.present`
-- Fixed R8 build failures in minified apps that don't include Uplink
-- Provider login pages now use the visible Activity, so password-manager autofill works
-- The SDK version is now correct when the SDK is built from source
-- Updated internal Muppet and Uplink dependencies (#287, #290)
+- Added the WebView provider and version to the platform info sent to Transact, and recorded a dedicated exit reason when a session closes because the WebView is unsupported
 
 ### Products
 
