@@ -1,13 +1,20 @@
-## 2026-10-01
+## 2026-10-09
 
 ### Impact
 
-- **Transact now reports the device's WebView provider and version.** Atomic can now see which WebView each Android session ran on, such as Android System WebView or Chrome, and which version. This makes WebView-related issues faster to diagnose, including devices affected by the multiple-profile WebView requirement added in v3.25.0.
-- **Sessions blocked by an unsupported WebView are now tracked separately.** Atomic's monitoring can now tell these sessions apart from other errors that happen before Transact loads.
+- **Transact can open as a form sheet.** Set `presentationStyle` to `FORM_SHEET` and Transact opens as a partial-height sheet over your app, with the app dimmed behind it. Full screen is still the default, so existing integrations behave the same.
+- **The requirements tables are update** Earlier releases already required newer Kotlin, AGP, and compileSdk versions than the tables listed, so most apps need no changes. The corrected minimums:
+  - Latest: Kotlin 2.1 or later, where the tables said 2.0. AGP 8.9.1 or later and compileSdk 36.
+  - Legacy (`-kotlin1.9`): AGP 8.6 or later, where the tables said 8.1 to 8.5. compileSdk 35.
+
+  The SDK now declares its AGP and compileSdk minimums, so Gradle stops an app's build below them and names the version it needs. CI also fails if a dependency update would raise any minimum.
+- **Minified builds work again for apps on OkHttp 5.** Apps on OkHttp 5 without the OkHttp BOM failed at the R8 step, because an SDK dependency referenced a class OkHttp 5 removed. The SDK no longer pulls in that dependency.
 
 ### Changes
 
-- Added the WebView provider and version to the platform info sent to Transact, and recorded a dedicated exit reason when a session closes because the WebView is unsupported
+- Added a form sheet presentation style through the new `Config.PresentationStyle` option (`FULL_SCREEN` or `FORM_SHEET`)
+- Documented the minimum Kotlin, AGP, and compileSdk for both variants, declared the AGP and compileSdk minimums in the AAR so Gradle flags an app below them at build time, and checked them in CI (#300, #308)
+- Updated internal SDK dependencies, which fixes minified builds for apps on OkHttp 5 (#299, #300)
 
 ### Products
 
@@ -19,21 +26,25 @@
 
 #### Latest
 
-| Name       | Compatible | Build Version |
-| ---------- | ---------- | ------------- |
-| Kotlin     | 2.0+       | 2.1.21        |
-| Gradle     | 8.11.1+    | 8.14.2        |
-| AGP        | 8.9+       | 8.9.1         |
-| Min SDK    | 23         | 23            |
-| Target SDK | 35         | 35            |
+| Name              | Compatible | Build Version |
+| ----------------- | ---------- | ------------- |
+| Kotlin            | 2.1+       | 2.2.21        |
+| Gradle            | 8.11.1+    | 8.14.2        |
+| AGP               | 8.9.1+     | 8.13.2        |
+| Compile SDK       | 36+        | 36            |
+| Min SDK           | 23         | 23            |
+| Tested Target SDK | 36         | 36            |
 
 #### Legacy (`-kotlin1.9`)
 
-| Name       | Compatible | Build Version |
-| ---------- | ---------- | ------------- |
-| Kotlin     | 1.9.x      | 1.9.25        |
-| Gradle     | 8.0+       | 8.7           |
-| AGP        | 8.1 - 8.5  | 8.1.4         |
-| Min SDK    | 23         | 23            |
-| Target SDK | 35         | 35            |
+| Name              | Compatible | Build Version |
+| ----------------- | ---------- | ------------- |
+| Kotlin            | 1.9.x      | 1.9.25        |
+| Gradle            | 8.7+       | 8.14.2        |
+| AGP               | 8.6+       | 8.6.1         |
+| Compile SDK       | 35+        | 35            |
+| Min SDK           | 23         | 23            |
+| Tested Target SDK | 36         | 36            |
+
+JetBrains tests Kotlin 1.9.x only through AGP 8.1, so the Kotlin Gradle plugin warns that AGP 8.6+ is above its tested range. The warning is expected. The build works, and CI verifies the legacy artifact against it.
 
