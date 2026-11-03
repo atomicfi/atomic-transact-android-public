@@ -1,20 +1,16 @@
-## 2026-10-09
+## 2026-11-03
 
 ### Impact
 
-- **Transact can open as a form sheet.** Set `presentationStyle` to `FORM_SHEET` and Transact opens as a partial-height sheet over your app, with the app dimmed behind it. Full screen is still the default, so existing integrations behave the same.
-- **The requirements tables are update** Earlier releases already required newer Kotlin, AGP, and compileSdk versions than the tables listed, so most apps need no changes. The corrected minimums:
-  - Latest: Kotlin 2.1 or later, where the tables said 2.0. AGP 8.9.1 or later and compileSdk 36.
-  - Legacy (`-kotlin1.9`): AGP 8.6 or later, where the tables said 8.1 to 8.5. compileSdk 35.
-
-  The SDK now declares its AGP and compileSdk minimums, so Gradle stops an app's build below them and names the version it needs. CI also fails if a dependency update would raise any minimum.
-- **Minified builds work again for apps on OkHttp 5.** Apps on OkHttp 5 without the OkHttp BOM failed at the R8 step, because an SDK dependency referenced a class OkHttp 5 removed. The SDK no longer pulls in that dependency.
+- **Stored data is protected by a hardware-backed key.** The SDK now checks that the key encrypting its local storage is backed by secure hardware (TEE or StrongBox). In release builds, a software-backed key (for example on a rooted device or custom ROM) is rejected and the SDK stops storing data on that device. Debuggable builds, including emulators, log a warning and keep working.
 
 ### Changes
 
-- Added a form sheet presentation style through the new `Config.PresentationStyle` option (`FULL_SCREEN` or `FORM_SHEET`)
-- Documented the minimum Kotlin, AGP, and compileSdk for both variants, declared the AGP and compileSdk minimums in the AAR so Gradle flags an app below them at build time, and checked them in CI (#300, #308)
-- Updated internal SDK dependencies, which fixes minified builds for apps on OkHttp 5 (#299, #300)
+- Added `TransactSession`, a session-based way to configure and present Transact, alongside the existing `Transact.present` API
+- Released Transact sessions that ended without cleanup, and reported background launches through `onClose` instead of throwing; added `PausedTransactRef.tryResume()`
+- Required a hardware-backed key for the SDK's encrypted storage in release builds
+- Recorded which launch API opened Transact in SDK telemetry
+- Updated the internal WebView library so a stalled page handler can no longer stop page events or lose a page close (Latest variant only)
 
 ### Products
 
