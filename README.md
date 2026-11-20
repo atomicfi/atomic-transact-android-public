@@ -1,6 +1,8 @@
-# Atomic Transact Android SDK — Demo
+# Atomic Transact Android SDK — Public Helper Repo
 
-This repository contains the Android SDK artifacts and a demo app that shows how to integrate and run the Transact experience on Android devices.
+This is a public helper repository for the Atomic Transact Android SDK. It holds the public release notes and a demo app that shows how to integrate and run the Transact experience on Android devices. The SDK source isn't developed here.
+
+To add the SDK to your app, use the `financial.atomic:transact` artifact on [Maven Central](https://central.sonatype.com/artifact/financial.atomic/transact).
 
 ## Quick demo (run locally)
 
@@ -26,11 +28,3 @@ You can also open the project in Android Studio and run the `app` module normall
 
 - Edit `app/src/main/res/values/strings.xml` or the app's settings to provide any required public token or environment configuration used by the demo.
 - For testing against local Services, point the demo's environment configuration to your local Transact/Services endpoints.
-
-## What this repo's CI does
-
-- The repository contains CI/release pipelines that publish the built SDK artifacts to Maven Central. Those pipelines are for publishing the SDK only — use the demo app to test integrations locally.
-
-## Issues & Contributing
-
-If you find issues with the demo or the SDK, open an issue or PR in this repository with reproduction steps.
