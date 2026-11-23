@@ -1,16 +1,16 @@
-## 2026-11-03
+## 2026-11-23
 
 ### Impact
 
-- **Stored data is protected by a hardware-backed key.** The SDK now checks that the key encrypting its local storage is backed by secure hardware (TEE or StrongBox). In release builds, a software-backed key (for example on a rooted device or custom ROM) is rejected and the SDK stops storing data on that device. Debuggable builds, including emulators, log a warning and keep working.
+- **Transact can show Portuguese and regional text.** Apps can pass a locale code such as `pt-BR` or `en_CA` in `Config.language`, and the SDK sends Transact one of its supported locales (en-US, en-CA, es-US, fr-CA, pt-BR). A bare language such as `en` takes its region from the device, so existing integrations can get regional text without code changes. Wrappers that pass a config token get the same behavior.
+- **Code that treats `Config.Language` as an enum needs a small update.** It is now a class. `Config.Language.en`, `.es`, `.fr` and `valueOf(String)` keep their signatures, so most integrations compile unchanged. `values()`, `entries`, `name` and exhaustive `when` over it no longer compile. `valueOf` now accepts any locale code instead of throwing on unknown values.
 
 ### Changes
 
-- Added `TransactSession`, a session-based way to configure and present Transact, alongside the existing `Transact.present` API
-- Released Transact sessions that ended without cleanup, and reported background launches through `onClose` instead of throwing; added `PausedTransactRef.tryResume()`
-- Required a hardware-backed key for the SDK's encrypted storage in release builds
-- Recorded which launch API opened Transact in SDK telemetry
-- Updated the internal WebView library so a stalled page handler can no longer stop page events or lose a page close (Latest variant only)
+- Added public Kotlin models for Payments Hub accounts, companies, suggestions and actions in `financial.atomic.transact.api`
+- Added `TransactSession.apiClient` to read Payments Hub data, search companies and execute actions without presenting Transact
+- Added Portuguese and full locale codes to `Config.language`, resolved to the locales Transact supports. `Config.Language` is now a class instead of an enum
+- Added `Config.Platform.hostFramework` for wrapper SDKs, reported the wrapper version in telemetry, and reported React Native and Capacitor token sessions under their own platform instead of native. `Platform`'s constructor and `copy` gain the parameter, and `encode()` now returns `Map<String, Any?>`
 
 ### Products
 
@@ -43,4 +43,5 @@
 | Tested Target SDK | 36         | 36            |
 
 JetBrains tests Kotlin 1.9.x only through AGP 8.1, so the Kotlin Gradle plugin warns that AGP 8.6+ is above its tested range. The warning is expected. The build works, and CI verifies the legacy artifact against it.
+
 
